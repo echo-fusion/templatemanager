@@ -8,12 +8,12 @@ use EchoFusion\TemplateManager\Exceptions\TemplateException;
 use function array_key_exists;
 use function is_dir;
 use function is_file;
-use function mb_strpos;
-use function mb_substr;
 use function preg_match;
 use function rtrim;
 use function sprintf;
 use function str_contains;
+use function strpos;
+use function substr;
 
 /**
  * Maps template names to files.
@@ -80,12 +80,12 @@ final class TemplateFinder
             return ['', $name];
         }
 
-        $slash = mb_strpos($name, '/');
+        $slash = strpos($name, '/');
         if ($slash === false) {
-            return [mb_substr($name, 1), ''];
+            return [substr($name, 1), ''];
         }
 
-        return [mb_substr($name, 1, $slash - 1), mb_substr($name, $slash + 1)];
+        return [substr($name, 1, $slash - 1), substr($name, $slash + 1)];
     }
 
     /**

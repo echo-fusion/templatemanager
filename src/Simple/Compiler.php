@@ -16,15 +16,15 @@ use function count;
 use function explode;
 use function implode;
 use function in_array;
-use function mb_strlen;
-use function mb_strtolower;
-use function mb_substr;
-use function mb_substr_count;
 use function preg_match;
 use function preg_split;
 use function rtrim;
 use function sprintf;
 use function str_replace;
+use function strlen;
+use function strtolower;
+use function substr;
+use function substr_count;
 use function token_get_all;
 use function trim;
 use function var_export;
@@ -75,8 +75,8 @@ final class Compiler
         $parent = null;
         if (preg_match('~^\s*\{%\s*extends\s+(?:\'([^\']+)\'|"([^"]+)")\s*%\}~', $source, $m) === 1) {
             $parent = $m[2] ?? $m[1];
-            $source = mb_substr($source, mb_strlen($m[0]));
-            $this->line += mb_substr_count($m[0], "\n");
+            $source = substr($source, strlen($m[0]));
+            $this->line += substr_count($m[0], "\n");
         }
 
         $code = '';
@@ -84,13 +84,13 @@ final class Compiler
         $parts = preg_split('/(\{\{.*?\}\}|\{%.*?%\}|\{#.*?#\})/s', $source, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [];
 
         foreach ($parts as $part) {
-            $lines = mb_substr_count($part, "\n");
+            $lines = substr_count($part, "\n");
 
             if ($part === '') {
                 continue;
             }
 
-            $kind = mb_substr($part, 0, 2);
+            $kind = substr($part, 0, 2);
             $suppressed = $parent !== null && $blockDepth === 0;
 
             if ($kind === '{#') {
@@ -99,9 +99,9 @@ final class Compiler
                 if ($suppressed) {
                     $this->fail('Only {% block %} and {% set %} are allowed outside blocks in a template that extends another.');
                 }
-                $code .= $this->output(mb_substr($part, 2, -2));
+                $code .= $this->output(substr($part, 2, -2));
             } elseif ($kind === '{%') {
-                $code .= $this->tag(trim(mb_substr($part, 2, -2)), $parent, $blockDepth);
+                $code .= $this->tag(trim(substr($part, 2, -2)), $parent, $blockDepth);
             } elseif (!$suppressed) {
                 $code .= sprintf("echo %s;\n", var_export($part, true));
             } elseif (trim($part) !== '') {
@@ -136,8 +136,8 @@ final class Compiler
 
     private function tag(string $tag, ?string $parent, int &$blockDepth): string
     {
-        $word = mb_strtolower(preg_split('/\s+/', $tag, 2)[0] ?? '');
-        $rest = trim(mb_substr($tag, mb_strlen($word)));
+        $word = strtolower(preg_split('/\s+/', $tag, 2)[0] ?? '');
+        $rest = trim(substr($tag, strlen($word)));
 
         if ($parent !== null && $blockDepth === 0 && $word !== 'block' && $word !== 'set') {
             $this->fail('Only {% block %} and {% set %} are allowed outside blocks in a template that extends another.');
@@ -316,7 +316,7 @@ final class Compiler
         $current = '';
         $quote = null;
         $depth = 0;
-        $length = mb_strlen($source);
+        $length = strlen($source);
 
         for ($i = 0; $i < $length; $i++) {
             $char = $source[$i];
@@ -409,14 +409,14 @@ final class Compiler
     {
         $tokens = [];
         $offset = 0;
-        $length = mb_strlen($source);
+        $length = strlen($source);
 
         while ($offset < $length) {
             if (preg_match(self::TOKEN, $source, $m, 0, $offset) !== 1) {
-                if (trim(mb_substr($source, $offset)) === '') {
+                if (trim(substr($source, $offset)) === '') {
                     break;
                 }
-                $this->fail(sprintf('Unexpected character "%s" in expression "%s".', trim(mb_substr($source, $offset))[0], trim($source)));
+                $this->fail(sprintf('Unexpected character "%s" in expression "%s".', trim(substr($source, $offset))[0], trim($source)));
             }
 
             foreach (['str', 'num', 'id', 'op', 'punc'] as $type) {
@@ -426,7 +426,7 @@ final class Compiler
                     break;
                 }
             }
-            $offset += mb_strlen($m[0]);
+            $offset += strlen($m[0]);
         }
 
         return $tokens;
@@ -441,7 +441,7 @@ final class Compiler
         $endsOperand = false;
 
         foreach ($tokens as $i => [$type, $text]) {
-            $isOperator = $type === 'id' && in_array(mb_strtolower($text), ['and', 'or', 'not'], true);
+            $isOperator = $type === 'id' && in_array(strtolower($text), ['and', 'or', 'not'], true);
             $startsOperand = $type === 'str' || $type === 'num' || ($type === 'id' && !$isOperator) || ($type === 'punc' && ($text === '(' || $text === '['));
             if ($endsOperand && $startsOperand) {
                 $this->fail('Missing operator between two values');
@@ -451,7 +451,7 @@ final class Compiler
             switch ($type) {
                 case 'str':
                     $quote = $text[0];
-                    $php[] = var_export(str_replace(['\\' . $quote, '\\\\'], [$quote, '\\'], mb_substr($text, 1, -1)), true);
+                    $php[] = var_export(str_replace(['\\' . $quote, '\\\\'], [$quote, '\\'], substr($text, 1, -1)), true);
 
                     break;
                 case 'id':
@@ -472,7 +472,7 @@ final class Compiler
 
     private function identifier(string $text, bool $isCall): string
     {
-        $lower = mb_strtolower($text);
+        $lower = strtolower($text);
         $keywords = ['and' => '&&', 'or' => '||', 'not' => '!', 'true' => 'true', 'false' => 'false', 'null' => 'null'];
         if (isset($keywords[$lower])) {
             return $keywords[$lower];

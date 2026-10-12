@@ -28,6 +28,21 @@ final class FinderTest extends TestCase
         $this->assertSame(['' => [self::FIXTURES . '/tpl'], 'blog' => [self::FIXTURES . '/blog']], $finder->paths());
     }
 
+    public function testNamespaceParsingWorksWithNonAsciiNames(): void
+    {
+        $dir = sys_get_temp_dir() . '/ef-finder-' . uniqid('', true);
+        mkdir($dir . '/نوشته', 0775, true);
+        file_put_contents($dir . '/نوشته/صفحه.tpl', 'x');
+        $finder = new TemplateFinder();
+        $finder->addPath($dir, 'بلاگ');
+
+        $this->assertSame($dir . '/نوشته/صفحه.tpl', $finder->find('@بلاگ/نوشته/صفحه', 'tpl'));
+
+        unlink($dir . '/نوشته/صفحه.tpl');
+        rmdir($dir . '/نوشته');
+        rmdir($dir);
+    }
+
     public function testFirstDirectoryWins(): void
     {
         $finder = new TemplateFinder();

@@ -18,10 +18,10 @@ use function implode;
 use function is_a;
 use function is_array;
 use function is_string;
-use function mb_strlen;
-use function mb_substr;
 use function sprintf;
 use function str_ends_with;
+use function strlen;
+use function substr;
 
 /**
  * Renders templates through one or more engines, selected by file extension.
@@ -177,7 +177,7 @@ final class TemplateManager implements TemplateManagerInterface
         foreach ($this->engines as $extension => $engine) {
             $suffix = '.' . $extension;
             if (str_ends_with($name, $suffix)) {
-                $bare = mb_substr($name, 0, -mb_strlen($suffix));
+                $bare = substr($name, 0, -strlen($suffix));
 
                 return $bare !== '' && $engine->exists($bare) ? [$engine, $bare] : null;
             }
