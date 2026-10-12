@@ -1,19 +1,17 @@
 # TemplateManager
 
+[![CI](https://github.com/echo-fusion/templatemanager/actions/workflows/ci.yml/badge.svg)](https://github.com/echo-fusion/templatemanager/actions/workflows/ci.yml) [![Packagist](https://img.shields.io/packagist/v/echo-fusion/templatemanager.svg)](https://packagist.org/packages/echo-fusion/templatemanager) [![PHP](https://img.shields.io/badge/php-8.1%20%7C%208.2%20%7C%208.3-777bb4.svg)](https://www.php.net) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **TemplateManager** renders templates for the EchoFusion framework. It has **no dependency on Symfony or Laravel**: it ships its own small template language (in the spirit of Twig/Smarty), supports plain PHP templates, and lets you plug in other engines such as Twig through configuration.
 
 It implements `EchoFusion\Contracts\TemplateManager\TemplateManagerInterface` from [echo-fusion/contracts](https://github.com/echo-fusion/contracts), so other packages can depend on the interface only.
+
+> Part of [EchoFusion](https://github.com/echo-fusion), a modular PHP framework built from small packages.
 
 ## Installation
 
 ```bash
 composer require echo-fusion/templatemanager
-```
-
-Optional, only if you want the Twig engine:
-
-```bash
-composer require twig/twig
 ```
 
 ## Requirements
