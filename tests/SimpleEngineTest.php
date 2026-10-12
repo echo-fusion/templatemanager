@@ -238,6 +238,32 @@ final class SimpleEngineTest extends TestCase
         $this->assertSame('{ not a tag } {x}', $this->render('{ not a tag } {x}'));
     }
 
+    public function testNonAsciiTemplates(): void
+    {
+        $this->assertSame(
+            'سلام علی، خانه-من | بله',
+            $this->render("{# نظر فارسی #}سلام {{ name }}، {{ 'خانه' ~ '-' ~ 'من' }} | {% if ok == 'بله' %}بله{% endif %}", ['name' => 'علی', 'ok' => 'بله']),
+        );
+        $this->assertSame('«ü» é', $this->render("{% set a = 'ü' %}«{{ a }}» é"));
+        $this->assertSame('ب', $this->render("{% set v = 'ب' %}{% if v == 'ب' %}{{ v }}{% endif %}"));
+    }
+
+    public function testNonAsciiTextAroundBlocksAndExtends(): void
+    {
+        $this->write('base', 'ع{% block a %}پیش‌فرض{% endblock %}غ');
+        $this->write('child', "{% extends \"base\" %}\n{# توضیح #}\n{% block a %}فرزند {{ x }}{% endblock %}");
+
+        $this->assertSame('عفرزند ۱غ', $this->engine()->render('child', ['x' => '۱']));
+    }
+
+    public function testNonAsciiSyntaxErrorsReportTheRightCharacter(): void
+    {
+        $this->expectException(TemplateSyntaxException::class);
+        $this->expectExceptionMessage('Unexpected character "$"');
+
+        $this->render("{{ 'سلام' ~ \$x }}");
+    }
+
     public function testIncludeSharesVariables(): void
     {
         $this->write('partial', '[partial {{ who }}]');
